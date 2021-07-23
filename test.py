@@ -20,3 +20,9 @@ if a:
     print('|'.join(a))
 else:
     print(None)
+
+a = None
+if not a:
+    print('empty')
+else:
+    print('full')

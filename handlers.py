@@ -66,9 +66,12 @@ def sub_currency(update, context):
     callback_type, symbol = update.callback_query.data.split("|")
     user = get_or_create_user(db, update.effective_user, update.effective_chat.id)
     if sub_currency_db(db, user, symbol):
+        user = get_or_create_user(db, update.effective_user, update.effective_chat.id)
         msg = f"Вы подписались на рассылку курса {symbol}"
     else:
+        user = get_or_create_user(db, update.effective_user, update.effective_chat.id)
         msg = f"Вы отписались от рассылки курса {symbol}"
+    msg += f"\nВаши подписки: {user['sub_currency']}"
     update.callback_query.message.edit_text(msg, reply_markup=sub_keyboard(0,1))
 
 def populate_DB(update, context):
