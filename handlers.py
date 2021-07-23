@@ -1,7 +1,8 @@
 from api_requests import request_all
 
-from db import (db, get_or_create_user, subscribe_user, set_recent_rates,
-                unsubscribe_user, default_currency_db, get_recent_rates)
+from db import (db, get_or_create_user, set_recent_rates,
+                unsubscribe_user, default_currency_db, get_recent_rates,
+                sub_currency_db)
 
 from utils import main_keyboard, sub_keyboard
 
@@ -32,7 +33,7 @@ def default_currency_reply(update, context):
 def list_currency(update, context):
     user = get_or_create_user(db, update.effective_user, update.message.chat.id)
     rates = get_recent_rates(db)
-    response = f"Курсы валют на {rates['datetime']} в {user['default_currency']}:\n"
+    response = f"Курсы валют на {rates['datetime']} в {user['default_currency']}:\n\n"
     rates = rates['currency']
     for i in settings.CURRENCY_SYMBOLS:
         response += f"{i}: {rates[i]/rates[user['default_currency']]}" + "\n"
@@ -43,7 +44,7 @@ def list_currency(update, context):
 def list_crypto(update, context):
     user = get_or_create_user(db, update.effective_user, update.message.chat.id)
     rates = get_recent_rates(db)
-    response = f"Курсы криптовалют на {rates['datetime']} в {user['default_currency']}:\n"
+    response = f"Курсы криптовалют на {rates['datetime']} в {user['default_currency']}:\n\n"
     for i in settings.CRYPTO_SYMBOLS:
         response += f"{i}: {rates['crypto'][i]*rates['currency'][user['default_currency']]}" + "\n"
         #response += '\n'
@@ -53,16 +54,22 @@ def list_crypto(update, context):
 def list_stocks(update, context):
     user = get_or_create_user(db, update.effective_user, update.message.chat.id)
     rates = get_recent_rates(db)
-    response = f"Курсы акций на {rates['datetime']} в {user['default_currency']}:\n"
+    response = f"Курсы акций на {rates['datetime']} в {user['default_currency']}:\n\n"
     for i in settings.STOCKS_SYMBOLS:
         response += f"{i}: {rates['stocks'][i]*rates['currency'][user['default_currency']]}" + "\n"
         #response += '\n'
     update.message.reply_text(response, reply_markup=sub_keyboard(2,3))
 
 
-def subscribe(update, context):
-    pass
-
+def sub_currency(update, context):
+    update.callback_query.answer()
+    callback_type, symbol = update.callback_query.data.split("|")
+    user = get_or_create_user(db, update.effective_user, update.effective_chat.id)
+    if sub_currency_db(db, user, symbol):
+        msg = f"Вы подписались на рассылку курса {symbol}"
+    else:
+        msg = f"Вы отписались от рассылки курса {symbol}"
+    update.callback_query.message.edit_text(msg, reply_markup=sub_keyboard(0,1))
 
 def populate_DB(update, context):
     set_recent_rates(db, request_all())

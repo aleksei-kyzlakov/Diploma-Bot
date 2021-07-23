@@ -21,12 +21,24 @@ def get_or_create_user(db, effective_user, chat_id):
     return user
 
 
-def subscribe_user(db, user_data):
-    if not user_data.get('subscribed'):
+def sub_currency_db(db, user_data, symbol):
+    sub = user_data.get('sub_currency')
+    sub = sub.split('|')
+    if symbol in sub:
+        sub.remove(symbol)
+    else:
+        sub.append(symbol)
+    sub = '|'.join(sub)
+    if sub:
         db.users.update_one(
             {'_id': user_data['_id']},
-            {'$set': {'subscribed': True}}
-        )
+            {'$set': {'sub_currency': sub}})
+        return True
+    else:
+        db.users.update_one(
+            {'_id': user_data['_id']},
+            {'$unset': {'sub_currency': ''}})
+        return False
 
 
 def unsubscribe_user(db, user_data):

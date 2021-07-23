@@ -20,4 +20,5 @@ def sub_keyboard(keyset,option):
     for i in range(len(symbols[keyset])):
         inline_keys[0].append(InlineKeyboardButton(symbols[keyset][i], 
                             callback_data=options[option]+symbols[keyset][i]))
+        print(options[option]+symbols[keyset][i])
     return InlineKeyboardMarkup(inline_keys)

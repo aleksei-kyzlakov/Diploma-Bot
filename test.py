@@ -13,3 +13,10 @@ for i in range(len(symbols[0])):
 
 print(inline_keys)
 
+a = {'sub':'aa'}
+a = a['sub'].split('|')
+a.remove('aa')
+if a:
+    print('|'.join(a))
+else:
+    print(None)

@@ -10,7 +10,8 @@ from telegram.ext import messagequeue as mq
 from telegram.utils.request import Request
 
 from handlers import (greeting, echo, default_currency_handler, default_currency_reply,
-                      list_crypto, list_currency, list_stocks, populate_DB)
+                      list_crypto, list_currency, list_stocks, populate_DB,
+                      sub_currency)
 
 PROXY = {'proxy_url': settings.PROXY_URL, 
          'urllib3_proxy_kwargs': {'username': settings.PROXY_USERNAME, 'password': settings.PROXY_PASSWORD}}
@@ -59,7 +60,7 @@ def main():
     dp.add_handler(MessageHandler(Filters.regex('^(Курсы акций)$'), list_stocks))
     dp.add_handler(MessageHandler(Filters.regex('^(заполнить базу)$'), populate_DB))
     dp.add_handler(CallbackQueryHandler(default_currency_reply, pattern='^(default|)'))
-#    dp.add_handler(CallbackQueryHandler(sub_currency, pattern='^(sub_cur|)'))
+    dp.add_handler(CallbackQueryHandler(sub_currency, pattern='^(sub_cur|)'))
 #    dp.add_handler(CallbackQueryHandler(sub_crypto, pattern='^(sub_crypto|)'))
 #    dp.add_handler(CallbackQueryHandler(sub_stocks, pattern='^(sub_stock|)'))
     dp.add_handler(MessageHandler(Filters.text, echo))
