@@ -11,14 +11,16 @@ def main_keyboard():
                                 resize_keyboard=True)
 
 
-def sub_keyboard(keyset,option):
+def sub_keyboard(keyset, option):
     symbols = [['USD','GBP','CNY','JPY','RUB','EUR'],
               ['BTC','ETH','BNB','ADA','HEX','XRP'],
               ['BAC','AAPL','AMC','SPY','VERB']]
-    options = ['default|', 'sub_cur|', 'sub_crypto|', 'sub_stock|']
-    inline_keys = [[]]
-    for i in range(len(symbols[keyset])):
-        inline_keys[0].append(InlineKeyboardButton(symbols[keyset][i], 
-                            callback_data=options[option]+symbols[keyset][i]))
-        print(options[option]+symbols[keyset][i])
-    return InlineKeyboardMarkup(inline_keys)
+    options = ['default|', 'sub_cur|', 'sub_crypto|', 'sub_stocks|']
+    buttons = []
+    chosen_option = options[option]
+    for symbol in symbols[keyset]:
+        key = symbol
+        callback_data = f'{chosen_option}{key}'
+        button = InlineKeyboardButton(key, callback_data=callback_data)
+        buttons.append(button)
+    return InlineKeyboardMarkup([buttons])
