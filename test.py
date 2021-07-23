@@ -1,21 +1,15 @@
 from telegram import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
-
+from datetime import datetime, timedelta
+from db import db, get_recent_rates, get_or_create_user
 
 symbols = [['USD','GBP','CNY','JPY','RUB','EUR'],
           ['BTC','ETH','BNB','ADA','HEX','XRP'],
           ['BAC','AAPL','AMC','SPY','VERB']]
 
-inline_keys = []
+inline_keys = [[]]
 
 for i in range(len(symbols[0])):
-    inline_keys.append([symbols[0][i]])
+    inline_keys[0].append(symbols[0][i])
 
 print(inline_keys)
 
-
-options = ['Валюта по умолчанию|',
-               'Подписка на валюту|',
-               'Подписка на крипто|',
-               'Подписка на акции|']
-
-print(options[0]+"!!")               

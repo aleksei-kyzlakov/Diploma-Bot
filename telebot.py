@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+from jobs import hourly_db_repopulation
 import logging
 import settings
 
@@ -8,7 +10,7 @@ from telegram.ext import messagequeue as mq
 from telegram.utils.request import Request
 
 from handlers import (greeting, echo, default_currency_handler, default_currency_reply,
-                      list_crypto, list_currency, list_stocks, )
+                      list_crypto, list_currency, list_stocks, populate_DB)
 
 PROXY = {'proxy_url': settings.PROXY_URL, 
          'urllib3_proxy_kwargs': {'username': settings.PROXY_USERNAME, 'password': settings.PROXY_PASSWORD}}
@@ -39,8 +41,14 @@ def main():
         proxy_url=PROXY['proxy_url'],
         urllib3_proxy_kwargs=PROXY['urllib3_proxy_kwargs']
     )
+
+    
     bot = MQBot(settings.API_KEY, request=request)
     mybot = Updater(bot=bot, use_context=True)
+
+    nearest_round_hour = datetime.now() + (datetime.min - datetime.now()) % timedelta(minutes=60)
+    jq = mybot.job_queue
+    jq.run_repeating(hourly_db_repopulation, interval=3600, first=nearest_round_hour)
 
     
     dp=mybot.dispatcher
@@ -49,6 +57,7 @@ def main():
     dp.add_handler(MessageHandler(Filters.regex('^(Курсы валют)$'), list_currency))
     dp.add_handler(MessageHandler(Filters.regex('^(Курсы крипто)$'), list_crypto))
     dp.add_handler(MessageHandler(Filters.regex('^(Курсы акций)$'), list_stocks))
+    dp.add_handler(MessageHandler(Filters.regex('^(заполнить базу)$'), populate_DB))
     dp.add_handler(CallbackQueryHandler(default_currency_reply, pattern='^(default|)'))
 #    dp.add_handler(CallbackQueryHandler(sub_currency, pattern='^(sub_cur|)'))
 #    dp.add_handler(CallbackQueryHandler(sub_crypto, pattern='^(sub_crypto|)'))

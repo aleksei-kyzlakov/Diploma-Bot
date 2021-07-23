@@ -45,3 +45,13 @@ def default_currency_db(db, user_data, symbol):
         {'_id': user_data['_id']},
         {'$set': {'default_currency': symbol}}
     )
+
+
+def set_recent_rates(db, data):
+    db.rates.insert_one(data)
+
+def get_recent_rates(db):
+    recent_rates = db.rates.aggregate([{'$sort': {'datetime': -1}}])
+    recent_rates = next(recent_rates, None)
+    return recent_rates
+    
