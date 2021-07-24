@@ -1,12 +1,14 @@
-from datetime import datetime, timedelta
-from jobs import hourly_db_repopulation
+from datetime import datetime, timedelta, time
+from jobs import hourly_db_repopulation, sub_announce
 import logging
+import pytz
 import settings
 
 from telegram.bot import Bot
-from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, ConversationHandler,
-                          CallbackQueryHandler)
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, 
+                          ConversationHandler, CallbackQueryHandler)
 from telegram.ext import messagequeue as mq
+#from telegram.ext.jobqueue import Days
 from telegram.utils.request import Request
 
 from handlers import (greeting, echo, default_currency_handler, default_currency_reply,
@@ -14,7 +16,9 @@ from handlers import (greeting, echo, default_currency_handler, default_currency
                       sub_currency, sub_crypto, sub_stocks)
 
 PROXY = {'proxy_url': settings.PROXY_URL, 
-         'urllib3_proxy_kwargs': {'username': settings.PROXY_USERNAME, 'password': settings.PROXY_PASSWORD}}
+         'urllib3_proxy_kwargs': {
+         'username': settings.PROXY_USERNAME,
+         'password': settings.PROXY_PASSWORD}}
 
 logging.basicConfig(filename="bot.log", level=logging.INFO)
 
@@ -42,23 +46,27 @@ def main():
         proxy_url=PROXY['proxy_url'],
         urllib3_proxy_kwargs=PROXY['urllib3_proxy_kwargs']
     )
-
-    
     bot = MQBot(settings.API_KEY, request=request)
     mybot = Updater(bot=bot, use_context=True)
 
-    nearest_round_hour = datetime.now() + (datetime.min - datetime.now()) % timedelta(minutes=60)
     jq = mybot.job_queue
+    nearest_round_hour = datetime.now() + (datetime.min - datetime.now()) % timedelta(minutes=60)
+    nearest_round_hour.replace(tzinfo=pytz.timezone('Asia/Irkutsk'))
     jq.run_repeating(hourly_db_repopulation, interval=3600, first=nearest_round_hour)
 
-    
-    dp=mybot.dispatcher
+    jq_2 = mybot.job_queue
+    #target_time = time(12, 0, tzinfo=pytz.timezone('Asia/Irkutsk'))
+    #jq_2.run_daily(sub_announce, target_time)
+    jq_2.run_repeating(sub_announce, interval=60, first=10)
+
+
+    dp = mybot.dispatcher
     dp.add_handler(CommandHandler("start", greeting))
     dp.add_handler(MessageHandler(Filters.regex('^(Валюта по умолчанию)$'), default_currency_handler))
     dp.add_handler(MessageHandler(Filters.regex('^(Курсы валют)$'), list_currency))
     dp.add_handler(MessageHandler(Filters.regex('^(Курсы крипто)$'), list_crypto))
     dp.add_handler(MessageHandler(Filters.regex('^(Курсы акций)$'), list_stocks))
-    dp.add_handler(MessageHandler(Filters.regex('^(заполнить базу)$'), populate_DB))
+    dp.add_handler(MessageHandler(Filters.regex('^(DEMO заполнить базу)$'), populate_DB))
     dp.add_handler(CallbackQueryHandler(default_currency_reply, pattern='^(default\|)'))
     dp.add_handler(CallbackQueryHandler(sub_currency, pattern='^(sub_cur\|)'))
     dp.add_handler(CallbackQueryHandler(sub_crypto, pattern='^(sub_crypto\|)'))

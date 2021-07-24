@@ -1,10 +1,8 @@
 from pymongo import MongoClient
 import settings
 
-
 client = MongoClient(settings.MONGO_LINK)
 db = client[settings.MONGO_DB]
-
 
 def get_or_create_user(db, effective_user, chat_id):
     user = db.users.find_one({"user_id": effective_user.id})
@@ -112,8 +110,12 @@ def default_currency_db(db, user_data, symbol):
 def set_recent_rates(db, data):
     db.rates.insert_one(data)
 
+
 def get_recent_rates(db):
     recent_rates = db.rates.aggregate([{'$sort': {'datetime': -1}}])
     recent_rates = next(recent_rates, None)
     return recent_rates
     
+
+def get_sub(db, option):
+    return db.users.find({option:{'$exists': True}})

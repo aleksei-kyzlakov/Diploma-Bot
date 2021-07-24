@@ -7,7 +7,7 @@ def main_keyboard():
                                 KeyboardButton('Курсы валют')], 
                                 [KeyboardButton('Курсы крипто'),
                                 KeyboardButton('Курсы акций')],
-                                [KeyboardButton('заполнить базу')]], 
+                                [KeyboardButton('DEMO заполнить базу')]], 
                                 resize_keyboard=True)
 
 
